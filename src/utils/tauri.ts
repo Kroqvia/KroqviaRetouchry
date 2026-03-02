@@ -14,8 +14,8 @@ export const renderPreview = async (
   const bytes = await invoke<number[]>('render_preview', {
     path,
     ops,
-    max_width: maxWidth,
-    max_height: maxHeight,
+    maxWidth,
+    maxHeight,
   });
 
   return Uint8Array.from(bytes);

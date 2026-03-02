@@ -75,7 +75,10 @@ describe('app behavior', () => {
     await act(async () => {
       vi.advanceTimersByTime(81);
       await Promise.resolve();
+      await Promise.resolve();
     });
+
+    expect(screen.getByAltText('Preview')).toBeInTheDocument();
 
     vi.mocked(renderPreview).mockClear();
 
@@ -95,6 +98,40 @@ describe('app behavior', () => {
     });
 
     expect(renderPreview).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not schedule repeated preview renders while one render is in flight', async () => {
+    useEditorStore.getState().setSession('/tmp/a.png', META);
+
+    let resolveRender: ((value: Uint8Array) => void) | null = null;
+    const pendingRender = new Promise<Uint8Array>((resolve) => {
+      resolveRender = resolve;
+    });
+    vi.mocked(renderPreview).mockReturnValue(pendingRender);
+
+    render(<App />);
+
+    await act(async () => {
+      vi.advanceTimersByTime(81);
+      await Promise.resolve();
+    });
+
+    expect(renderPreview).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(400);
+      await Promise.resolve();
+    });
+
+    expect(renderPreview).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveRender?.(PNG_BYTES);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByAltText('Preview')).toBeInTheDocument();
   });
 
   it('keyboard shortcuts trigger open/export/undo/redo flows', async () => {

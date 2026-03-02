@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { open, save } from '@tauri-apps/plugin-dialog';
+import { shallow } from 'zustand/shallow';
 import { CropOverlay } from './components/CropOverlay';
 import { CropPanel } from './components/CropPanel';
 import { ToolTabs } from './components/ToolTabs';
@@ -77,7 +78,7 @@ function App(): JSX.Element {
   const error = useEditorStore((state) => state.error);
   const notice = useEditorStore((state) => state.notice);
 
-  const activeOps = useEditorStore(selectActiveOps);
+  const activeOps = useEditorStore(selectActiveOps, shallow);
   const canUndo = useEditorStore(selectCanUndo);
   const canRedo = useEditorStore(selectCanRedo);
   const brightness = useEditorStore((state) => selectCurrentAdjustmentValue(state, 'brightness'));
